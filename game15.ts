@@ -14,14 +14,15 @@ enum KeyboardCodes {
     Up = 38,
     Right = 39,
     Down = 40,
-    R = 82
+    S = 83
 }
 
 class ResponsiveSizesManager {
     static windowContentHeight: number;
     static tileFontSizePixels: number;
 
-    private static gameContentPercentage: number = 0.7;
+    private static safeHeightOffset: number = 70;
+    private static safeWidthOffset: number = 20;
 
     private static tileSidePercentage: number;
     private static boardSidePercentage: number;
@@ -30,22 +31,36 @@ class ResponsiveSizesManager {
     public static boardSidePixels: number;
 
     static ResizePage() {
-        var height = innerHeight;
-        var width = innerWidth;
+        var pageHeight = innerHeight;
+        var pageWidth = innerWidth;
 
-        if (height < width) {
-            var gameContentHeightPercentage = height / height * 100 * this.gameContentPercentage;
-            var gameContentWidthPercentage = height / width * 100 * this.gameContentPercentage;
+        if (pageHeight < pageWidth) {
+            var bodyHeightUsefulPixels = (document.body.clientHeight - document.querySelector('footer').clientHeight - this.safeHeightOffset);
+            var bodyHeightUsefulPercentage = bodyHeightUsefulPixels / pageHeight;
+
+            var gameContentHeightPercentage = pageHeight / pageHeight * 100 * bodyHeightUsefulPercentage;
+            var gameContentWidthPercentage = pageHeight / pageWidth * 100 * bodyHeightUsefulPercentage;
 
             this.tileSidePercentage = gameContentHeightPercentage / BoardSideManager.boardSideTiles;
-            this.tileSidePixels = this.tileSidePercentage / 100 * height;
+            this.tileSidePixels = this.tileSidePercentage / 100 * pageHeight;
             this.tileFontSizePixels = this.tileSidePixels * 0.33;
 
             this.boardSidePercentage = BoardSideManager.boardSideTiles * this.tileSidePercentage;
-            this.boardSidePixels = gameContentWidthPercentage / 100 * width;
+            this.boardSidePixels = gameContentWidthPercentage / 100 * pageWidth;
         }
         else {
-            //?????
+            var bodyWidthUsefulPixels = (document.body.clientWidth - this.safeWidthOffset);
+            var bodyWidthUsefulPercentage = bodyWidthUsefulPixels / pageWidth;
+
+            var gameContentWidthPercentage = pageWidth / pageWidth * 100 * bodyWidthUsefulPercentage;
+            var gameContentHeightPercentage = pageWidth / pageHeight * 100 * bodyWidthUsefulPercentage;
+
+            this.tileSidePercentage = gameContentHeightPercentage / BoardSideManager.boardSideTiles;
+            this.tileSidePixels = this.tileSidePercentage / 100 * pageHeight;
+            this.tileFontSizePixels = this.tileSidePixels * 0.33;
+
+            this.boardSidePercentage = BoardSideManager.boardSideTiles * this.tileSidePercentage;
+            this.boardSidePixels = gameContentWidthPercentage / 100 * pageWidth;
         }
 
         //resize board
@@ -300,15 +315,82 @@ class BoardManager {
     }
 
     private SubscribeToKeyboardButtons() {
-        window.onkeydown = function (e) {
-            switch (e.keyCode) {
-                case KeyboardCodes.Left:
-                    {
-                        alert(e.keyCode);
+        window.onkeydown = (e) => this.OnKeyDown(e);
+    }
 
+    private OnKeyDown(e) {
+        var x: number;
+        var y: number;
+        var tileToMove: BoardCell = null;
+
+        switch (e.keyCode) {
+            case KeyboardCodes.Left:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Left)) {
+                        x = this.BoardCellHoldingZeroTile.x - 1;
+                        y = this.BoardCellHoldingZeroTile.y;
+                        tileToMove = this.board.cells[y][x];
                     }
-            }
-        };
+                    break;
+                }
+            case KeyboardCodes.Right:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Right)) {
+                        x = this.BoardCellHoldingZeroTile.x + 1;
+                        y = this.BoardCellHoldingZeroTile.y;
+                        tileToMove = this.board.cells[y][x];
+                    }
+                    break;
+                }
+            case KeyboardCodes.Up:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Up)) {
+                        x = this.BoardCellHoldingZeroTile.x;
+                        y = this.BoardCellHoldingZeroTile.y - 1;
+                        tileToMove = this.board.cells[y][x];
+                    }
+                    break;
+                }
+            case KeyboardCodes.Down:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Down)) {
+                        x = this.BoardCellHoldingZeroTile.x;
+                        y = this.BoardCellHoldingZeroTile.y + 1;
+                        tileToMove = this.board.cells[y][x];
+                    }
+                    break;
+                }
+            case KeyboardCodes.S:
+                {
+                    this.GameReset();
+                    return;
+                }
+        }
+
+        if (tileToMove != null) {
+            this.MoveTile(tileToMove);
+        }
+    }
+
+    private TryMoveZeroTile(moveDirection: MoveDirections) {
+        switch (moveDirection) {
+            case MoveDirections.Left:
+                {
+                    return (0 < this.BoardCellHoldingZeroTile.x);
+                }
+            case MoveDirections.Right:
+                {
+                    return (this.BoardCellHoldingZeroTile.x < BoardSideManager.boardSideTiles);
+                }
+            case MoveDirections.Up:
+                {
+                    return (0 < this.BoardCellHoldingZeroTile.y);
+                }
+            case MoveDirections.Down:
+                {
+                    return (this.BoardCellHoldingZeroTile.y < BoardSideManager.boardSideTiles);
+                }
+        }
     }
 
     public OnTileClick(data: any) {
@@ -448,7 +530,7 @@ class BoardManager {
         this.movesCounter.Reset();
 
         this.movesCounter.IsEnabled = false;
-        var shuffleTimes = 15;
+        var shuffleTimes = 200;
 
         for (var i = 0; i < shuffleTimes; i++) {
             var moveAbleTiles = TileGetter.GetMoveAbleTiles(this.board);
@@ -564,11 +646,6 @@ class TileGetter {
         else if (x == 0 || x == edgeIndex || y == 0 || y == edgeIndex) {
             return TilePositions.Side;
         }
-        /* full check
-        else if ((x == 0 || x == edgeIndex) && y != 0 && y != edgeIndex ||
-            (y == 0 || y == edgeIndex) && x != 0 && x != edgeIndex) {
-            return TilePositions.Side;
-        }*/
         else {
             return TilePositions.Inside;
         }

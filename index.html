@@ -1,22 +1,10 @@
-﻿<html lang="en">
+﻿<html>
 <head>
-    <title>15Game via TypeScript</title>
-
+    <title>Game15</title>
     <link rel="stylesheet" href="index.css" type="text/css" />
-    <script src="app.js"></script>
+    <script src="game15.js"></script>
 </head>
 <body>
-    <header>
-        <div class="container-content">
-            <nav id="nav-main">
-                <ul>
-                    <li><a href="http://www.google.com">Link1</a></li>
-                    <li><a href="http://www.google.com">Link2</a></li>
-                    <li><a href="http://www.google.com">Link3</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
     <div class="container-content">
         <div id="board"></div>
         <div id="board-bottom-panel">
@@ -29,6 +17,15 @@
             </div>
             <div id="movescounter">
                 moves - <span id="movescounter-span"></span>
+            </div>
+            <div id="help-wrapper">
+                <span id="help">?</span>
+                <div class="tooltip">
+                    <ul>
+                        <li>Arrows - move zero tile</li>
+                        <li>S - shuffle board</li>
+                    </ul>
+                </div>
             </div>
             <button id="button-shuffle">Shuffle</button>
         </div>

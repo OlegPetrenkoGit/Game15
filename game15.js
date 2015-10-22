@@ -29,31 +29,43 @@ var KeyboardCodes;
     KeyboardCodes[KeyboardCodes["Up"] = 38] = "Up";
     KeyboardCodes[KeyboardCodes["Right"] = 39] = "Right";
     KeyboardCodes[KeyboardCodes["Down"] = 40] = "Down";
-    KeyboardCodes[KeyboardCodes["R"] = 82] = "R";
+    KeyboardCodes[KeyboardCodes["S"] = 83] = "S";
 })(KeyboardCodes || (KeyboardCodes = {}));
 var ResponsiveSizesManager = (function () {
     function ResponsiveSizesManager() {
     }
     ResponsiveSizesManager.ResizePage = function () {
-        var height = innerHeight;
-        var width = innerWidth;
-        if (height < width) {
-            var gameContentHeightPercentage = height / height * 100 * this.gameContentPercentage;
-            var gameContentWidthPercentage = height / width * 100 * this.gameContentPercentage;
+        var pageHeight = innerHeight;
+        var pageWidth = innerWidth;
+        if (pageHeight < pageWidth) {
+            var bodyHeightUsefulPixels = (document.body.clientHeight - document.querySelector('footer').clientHeight - this.safeHeightOffset);
+            var bodyHeightUsefulPercentage = bodyHeightUsefulPixels / pageHeight;
+            var gameContentHeightPercentage = pageHeight / pageHeight * 100 * bodyHeightUsefulPercentage;
+            var gameContentWidthPercentage = pageHeight / pageWidth * 100 * bodyHeightUsefulPercentage;
             this.tileSidePercentage = gameContentHeightPercentage / BoardSideManager.boardSideTiles;
-            this.tileSidePixels = this.tileSidePercentage / 100 * height;
+            this.tileSidePixels = this.tileSidePercentage / 100 * pageHeight;
             this.tileFontSizePixels = this.tileSidePixels * 0.33;
             this.boardSidePercentage = BoardSideManager.boardSideTiles * this.tileSidePercentage;
-            this.boardSidePixels = gameContentWidthPercentage / 100 * width;
+            this.boardSidePixels = gameContentWidthPercentage / 100 * pageWidth;
         }
         else {
+            var bodyWidthUsefulPixels = (document.body.clientWidth - this.safeWidthOffset);
+            var bodyWidthUsefulPercentage = bodyWidthUsefulPixels / pageWidth;
+            var gameContentWidthPercentage = pageWidth / pageWidth * 100 * bodyWidthUsefulPercentage;
+            var gameContentHeightPercentage = pageWidth / pageHeight * 100 * bodyWidthUsefulPercentage;
+            this.tileSidePercentage = gameContentHeightPercentage / BoardSideManager.boardSideTiles;
+            this.tileSidePixels = this.tileSidePercentage / 100 * pageHeight;
+            this.tileFontSizePixels = this.tileSidePixels * 0.33;
+            this.boardSidePercentage = BoardSideManager.boardSideTiles * this.tileSidePercentage;
+            this.boardSidePixels = gameContentWidthPercentage / 100 * pageWidth;
         }
         //resize board
         document.getElementById("board-bottom-panel").style.width = this.boardSidePixels.toString();
         document.getElementById("board").style.width = this.boardSidePixels.toString();
         document.getElementById("board").style.height = this.boardSidePixels.toString();
     };
-    ResponsiveSizesManager.gameContentPercentage = 0.7;
+    ResponsiveSizesManager.safeHeightOffset = 70;
+    ResponsiveSizesManager.safeWidthOffset = 20;
     return ResponsiveSizesManager;
 })();
 var PixelCoords = (function () {
@@ -278,14 +290,79 @@ var BoardManager = (function () {
         this.board.element.addEventListener("TileClick", function (eventData) { return _this.OnTileClick(eventData); }, true);
     };
     BoardManager.prototype.SubscribeToKeyboardButtons = function () {
-        window.onkeydown = function (e) {
-            switch (e.keyCode) {
-                case KeyboardCodes.Left:
-                    {
-                        alert(e.keyCode);
+        var _this = this;
+        window.onkeydown = function (e) { return _this.OnKeyDown(e); };
+    };
+    BoardManager.prototype.OnKeyDown = function (e) {
+        var x;
+        var y;
+        var tileToMove = null;
+        switch (e.keyCode) {
+            case KeyboardCodes.Left:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Left)) {
+                        x = this.BoardCellHoldingZeroTile.x - 1;
+                        y = this.BoardCellHoldingZeroTile.y;
+                        tileToMove = this.board.cells[y][x];
                     }
-            }
-        };
+                    break;
+                }
+            case KeyboardCodes.Right:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Right)) {
+                        x = this.BoardCellHoldingZeroTile.x + 1;
+                        y = this.BoardCellHoldingZeroTile.y;
+                        tileToMove = this.board.cells[y][x];
+                    }
+                    break;
+                }
+            case KeyboardCodes.Up:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Up)) {
+                        x = this.BoardCellHoldingZeroTile.x;
+                        y = this.BoardCellHoldingZeroTile.y - 1;
+                        tileToMove = this.board.cells[y][x];
+                    }
+                    break;
+                }
+            case KeyboardCodes.Down:
+                {
+                    if (this.TryMoveZeroTile(MoveDirections.Down)) {
+                        x = this.BoardCellHoldingZeroTile.x;
+                        y = this.BoardCellHoldingZeroTile.y + 1;
+                        tileToMove = this.board.cells[y][x];
+                    }
+                    break;
+                }
+            case KeyboardCodes.S:
+                {
+                    this.GameReset();
+                    return;
+                }
+        }
+        if (tileToMove != null) {
+            this.MoveTile(tileToMove);
+        }
+    };
+    BoardManager.prototype.TryMoveZeroTile = function (moveDirection) {
+        switch (moveDirection) {
+            case MoveDirections.Left:
+                {
+                    return (0 < this.BoardCellHoldingZeroTile.x);
+                }
+            case MoveDirections.Right:
+                {
+                    return (this.BoardCellHoldingZeroTile.x < BoardSideManager.boardSideTiles);
+                }
+            case MoveDirections.Up:
+                {
+                    return (0 < this.BoardCellHoldingZeroTile.y);
+                }
+            case MoveDirections.Down:
+                {
+                    return (this.BoardCellHoldingZeroTile.y < BoardSideManager.boardSideTiles);
+                }
+        }
     };
     BoardManager.prototype.OnTileClick = function (data) {
         var clickedTileDigit = data.detail;
@@ -399,7 +476,7 @@ var BoardManager = (function () {
     BoardManager.prototype.Shuffle = function () {
         this.movesCounter.Reset();
         this.movesCounter.IsEnabled = false;
-        var shuffleTimes = 15;
+        var shuffleTimes = 200;
         for (var i = 0; i < shuffleTimes; i++) {
             var moveAbleTiles = TileGetter.GetMoveAbleTiles(this.board);
             var moveAbleTilesCount = moveAbleTiles.length;
@@ -647,4 +724,4 @@ var GameFlow = (function () {
 window.onload = function () {
     var gameFlow = new GameFlow();
 };
-//# sourceMappingURL=app.js.map
+//# sourceMappingURL=game15.js.map

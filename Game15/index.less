@@ -1,0 +1,200 @@
+﻿@import (inline) "fonts.css";
+
+@black: #282828;
+
+@content-background: #EFD26C;
+@tile-color: #0E83CD;
+
+@header-background: #f9f9f9;
+@footer-background: #292929;
+
+@font-body: SolitasSlab;
+@font-tile: PatagoniaMedium;
+
+html {
+    -webkit-font-smoothing: antialiased;
+}
+
+header, footer {
+    display: block;
+}
+
+a {
+    text-decoration: none;
+}
+
+ul {
+    list-style: none;
+}
+
+body {
+    margin: 0;
+    background-color: @content-background;
+    font-size: 100%;
+    font-family: @font-body;
+}
+
+header {
+    overflow: hidden;
+    margin-bottom: 10px;
+    background: @header-background;
+    border-bottom: 1px solid #e8e4dc;
+    text-transform: uppercase;
+    height: 50px;
+}
+
+footer {
+    bottom: 0;
+    color: white;
+    background: @footer-background;
+    text-align: center;
+    position: fixed;
+    height: auto;
+    width: 100%;
+}
+
+button {
+    width: 23%;
+   margin: 0 1%;
+     height: inherit;
+    background-color: transparent;
+    border: none;
+    font-size: 1.3em;
+    font-family: @font-body;
+    text-transform: uppercase;
+
+        background-color: @black;
+        color: white;
+
+    &:hover {
+        background-color: @tile-color;
+        cursor: pointer;
+    }
+}
+
+#board {
+    position: relative;
+    margin: 10px auto;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+.tile {
+    position: absolute;
+    -webkit-font-smoothing: antialiased;
+    text-align: center;
+    color: white;
+    font-family: @font-tile;
+    background-color: @tile-color;
+
+
+    &:hover {
+        background-color: @tile-color + #222;
+        cursor: pointer;
+    }
+}
+
+#tile-zero {
+    color: transparent;
+    background-color: @black;
+
+    &:hover {
+        cursor: default;
+    }
+}
+
+.tile-moveable {
+    &:hover {
+        background-color: white;
+        color: @tile-color;
+        cursor: pointer;
+    }
+}
+
+.container-content {
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    width: auto;
+    height: auto;
+}
+
+@header-navigation-menu-width: 800px;
+
+#nav-main li {
+    width: 33%;
+    text-align: center;
+}
+
+nav li {
+    float: left;
+    position: relative;
+}
+
+#nav-main li a {
+    padding: 10px 20px;
+    color: @tile-color;
+    font-size: 1em;
+    border: 2px solid @tile-color;
+
+    &:hover {
+        background-color: @tile-color;
+        color: white;
+    }
+}
+
+#board-bottom-panel {
+    height: 30px;
+    line-height: 30px;
+    margin: 0 auto;
+}
+
+#button-shuffle {
+    width: 20%;
+    display: inline-block;
+    float: right;
+    vertical-align: middle;
+}
+
+#movescounter {
+    width: 23%;
+    display: inline-block;
+    float: left;
+    vertical-align: middle;
+    text-align: center;
+    margin-left: 1%;
+
+    &.enabled {
+        background-color: @content-background + #181818;
+    }
+
+    &.disabled {
+        text-transform: uppercase;
+    }
+}
+
+#board-side-selector {
+    width: 50%;
+    display: inline-block;
+    float: left;
+    vertical-align: middle;
+}
+
+.board-side-option {
+    width: 20%;
+    display: inline-block;
+    float: left;
+    color: white;
+    background-color: @black;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover{
+        background-color: @tile-color;
+    }
+
+    &.selected {
+        color: @black;
+        background-color: white;
+        cursor: default;
+    }
+}
